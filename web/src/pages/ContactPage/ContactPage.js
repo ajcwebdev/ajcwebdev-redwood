@@ -7,9 +7,32 @@ import {
   FieldError,
   Submit
 } from '@redwoodjs/forms'
+import { useMutation } from '@redwoodjs/web'
+import { useForm } from 'react-hook-form'
+
+const CREATE_CONTACT = gql`
+  mutation CreateContactMutation($input: CreateContactInput!) {
+    createContact(input: $input) {
+      id
+    }
+  }
+`
 
 const ContactPage = () => {
+  const formMethods = useForm()
+  const [create, { loading } ] = useMutation(CREATE_CONTACT, {
+    onCompleted: () => {
+      formMethods.reset()
+      alert('Thanks for telling me stuff about my things!')
+    }
+  })
+
   const onSubmit = (data) => {
+    create({
+      variables: {
+        input: data
+      }
+    })
     console.log(data)
   }
 
@@ -19,15 +42,20 @@ const ContactPage = () => {
       <p>Tell me stuff about my things!</p>
 
       <Form
-        onSubmit={onSubmit}
-        validation={
-          { mode: 'onBlur' }
+        onSubmit={
+          onSubmit
         }
+        validation={{
+          mode: 'onBlur'
+        }}
+        formMethods={formMethods}
       >
         <Label
           name="name"
           errorClassName="error"
-        />
+        >
+          Name
+        </Label>
         <TextField
           name="name"
           errorClassName="error"
@@ -41,7 +69,9 @@ const ContactPage = () => {
         <Label
           name="email"
           errorClassName="error"
-        />
+        >
+          Email
+        </Label>
         <TextField
           name="email"
           errorClassName="error"
@@ -58,7 +88,9 @@ const ContactPage = () => {
         <Label
           name="message"
           errorClassName="error"
-        />
+        >
+          Message
+        </Label>
         <TextAreaField
           name="message"
           errorClassName="error"
@@ -69,7 +101,9 @@ const ContactPage = () => {
           style={{ color: 'red' }}
         />
 
-        <Submit>Save</Submit>
+        <Submit disabled={loading}>
+          Save
+        </Submit>
       </Form>
     </BlogLayout>
   )
